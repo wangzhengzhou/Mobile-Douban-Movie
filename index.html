@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_1046350_8gzv0ztvanl.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        a {
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            font-size: 12px;
+        }
+
+        a::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        footer {
+            position: fixed;
+            height: 50px;
+            font-family: "iconfont";
+            width: 100%;
+            border-top: 1px solid #ccc;
+        }
+
+        footer>div {
+            width: calc(33.33% - 4px);
+            display: inline-block;
+            text-align: center;
+            padding-top: 5px;
+        }
+
+        footer>div>span {
+            display: block;
+            margin: 3px 0 10px;
+        }
+
+        .active {
+            color: #FF5722;
+        }
+
+        section {
+            display: none;
+            height: calc(100vh - 60px);
+            overflow: scroll;
+        }
+
+        section:first-child {
+            display: block;
+        }
+
+        a>img {
+            float: left;
+            width: 100px;
+        }
+
+        a>div {
+            padding-left: 110px;
+            color: #999;
+        }
+
+        h2 {
+            color: #222;
+        }
+
+        .score {
+            color: #FF5722;
+        }
+
+        .loading {
+            font-family: "iconfont";
+            text-align: center;
+            padding: 6px;
+            display: none;
+        }
+
+        .loading span {
+            display: inline-block;
+            animation: 1s rotate linear infinite;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .search-area {
+            width: 96%;
+            margin: 0 auto;
+            height: 52px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .search-area::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        .search-area input {
+            background-color: rgb(236, 230, 230);
+            color: #666;
+            width: calc(100% - 56px);
+            height: 32px;
+            border: none;
+            margin: 10px 0;
+            padding-left: 6px;
+            float: left;
+        }
+
+        .search-area button {
+            display: inline-block;
+            width: 50px;
+            height: 32px;
+            background-color: #FF5722;
+            color: white;
+            border-radius: 3px;
+            border: none;
+            margin: 10px 0;
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <section class="top250">
+            <div id="top250"></div>
+            <div class="loading"><span class="icon-loading"></span></div>
+        </section>
+        <section class="us">
+            <div id="us"></div>
+            <div class="loading"><span class="icon-loading"></span></div>
+        </section>
+        <section class="search">
+            <div class="search-area">
+                <input type="text" placeholder="搜索电影"><button>搜索</button>
+            </div>
+            <div id="search"></div>
+            <div class="loading"><span class="icon-loading"></span></div>
+        </section>
+    </main>
+    <footer>
+        <div class="icon-top250 active"><span>Top250</span></div>
+        <div class="icon-us"><span>北美</span></div>
+        <div class="icon-search"><span>搜索</span></div>
+    </footer>
+    <script>
+        /*简单页面实现*/
+        /*$('footer>div').click(function() {
+            $(this).addClass('active').siblings().removeClass('active')
+            var index = $(this).index()
+            $('section').hide().eq(index).fadeIn()
+        })
+        var index = 0;
+        start();
+        var isLoading = false;
+        function start() {
+            if(isLoading)return
+            isLoading = true
+            $('.loading').show()
+            $.ajax({
+                url: '//api.douban.com/v2/movie/top250',
+                type: 'GET',
+                data: {
+                    start: index,
+                    count: 10
+                },
+                dataType: 'jsonp'
+            }).done(function(ret) {
+                console.log(ret)
+                setData(ret)
+                index += 10
+            }).fail(function() {
+                console.log('error...')
+            }).always(function(){
+                isLoading = false
+                $('.loading').hide()
+            })
+
+        }
+
+        $('main').scroll(function() {
+            if ($('main').height() + $('main').scrollTop() >= $('section').eq(0).height() - 30) {
+                start()
+            }
+        })
+
+        function setData(data) {
+            data.subjects.forEach(function(movie) {
+                var tpl = `<div>
+                <a href="#">
+                    <img src="http://img1.doubanio.com/view/photo/s_ratio_poster/public/p480747492.jpg" alt="">
+                    <div><h2>申肖克的救赎</h2></div>    
+                    <div><span class="score">9.3</span><span class="collect">分/1000收藏</span></div>
+                    <div class="average">1994/犯罪 剧情</div>
+                    <div class="directors">导演：<span>弗兰克</span></div>
+                    <div class="starring">主演：<span>斯嘉丽</span></div>
+                </a>
+            </div>`
+                var $node = $(tpl);
+                $node.find('img').attr('src', movie.images.medium)
+                $node.find('h2').text(movie.title)
+                $node.find('.score').text(movie.arerage)
+                $node.find('.collect').text('分/' + movie.collect_count + '收藏')
+                $node.find('.average').text(movie.year + '/' + movie.genres.join('/'))
+                $node.find('.directors>span').text(function() {
+                    var directorsArr = []
+                    movie.directors.forEach(function(item) {
+                        directorsArr.push(item.name)
+                    })
+                    return directorsArr.join('、')
+                })
+                $node.find('.starring>span').text(function() {
+                    var starringArr = []
+                    movie.casts.forEach(function(item) {
+                        starringArr.push(item.name)
+                    })
+                    return starringArr.join('、')
+                })
+                $('#top250').append($node)
+            })
+        }*/
+
+        /*完整功能实现*/
+        /*var top250 = {
+            init: function() {
+                this.$element = $('.top250')
+                this.isLoading = false
+                this.isFinish = false
+                this.index = 0
+                this.bind()
+                this.start()
+            },
+            bind: function() {
+                var _this = this
+                this.$element.scroll(function() {
+                    if (_this.isToBottom()) {
+                        _this.start()
+                    }
+                })
+            },
+            start: function() {
+                var _this = this
+                this.getData(function(data) {
+                    _this.render(data)
+                })
+            },
+            getData: function(callback) {
+                var _this = this
+                if (_this.isLoading) return;
+                _this.isLoading = true
+                _this.$element.find('.loading').show()
+                $.ajax({
+                    url: '//api.douban.com/v2/movie/top250',
+                    data: {
+                        start: _this.index || 0,
+                        count: 10
+                    },
+                    dataType: 'jsonp'
+                }).done(function(ret) {
+                  console.log(ret)
+                    if (_this.index >= ret.total) {
+                        _this.isFinish = true
+                    }
+                    callback && callback(ret)
+                    _this.index += 10
+                }).fail(function() {
+                    console.log('error...')
+                }).always(function() {
+                    _this.isLoading = false
+                    _this.$element.find('.loading').hide()
+                })
+            },
+            render: function(data) {
+                var _this = this
+                data.subjects.forEach(function(movie) {
+                    var tpl = `<div>
+                                <a href="#">
+                                    <img src="http://img1.doubanio.com/view/photo/s_ratio_poster/public/p480747492.jpg" alt="">
+                                    <div><h2>申肖克的救赎</h2></div>    
+                                    <div><span class="score">9.3</span><span class="collect">分/1000收藏</span></div>
+                                    <div class="average">1994/犯罪 剧情</div>
+                                    <div class="directors">导演：<span>弗兰克</span></div>
+                                    <div class="starring">主演：<span>斯嘉丽</span></div>
+                                </a>
+                            </div>`
+                    var $node = $(tpl);
+                    $node.find('img').attr('src', movie.images.medium)
+                    $node.find('h2').text(movie.title)
+                    $node.find('.score').text(movie.arerage)
+                    $node.find('.collect').text('分/' + movie.collect_count + '收藏')
+                    $node.find('.average').text(movie.year + '/' + movie.genres.join('/'))
+                    $node.find('.directors>span').text(function() {
+                        var directorsArr = []
+                        movie.directors.forEach(function(item) {
+                            directorsArr.push(item.name)
+                        })
+                        return directorsArr.join('、')
+                    })
+                    $node.find('.starring>span').text(function() {
+                        var starringArr = []
+                        movie.casts.forEach(function(item) {
+                            starringArr.push(item.name)
+                        })
+                        return starringArr.join('、')
+                    })
+                    _this.$element.find('#top250').append($node)
+                })
+            },
+            isToBottom: function() {
+                return this.$element.find('#top250').height() <= this.$element.height() + this.$element.scrollTop() + 10
+            }
+        }
+        var usBox = {
+            init: function() {
+                this.$element = $('.us')
+                this.start()
+            },
+            start: function() {
+                var _this = this
+                this.getData(function(data) {
+                    _this.render(data)
+                })
+            },
+            getData: function(callback) {
+                var _this = this
+                _this.$element.find('.loading').show()
+                $.ajax({
+                    url: 'http://api.douban.com/v2/movie/us_box',
+                    dataType: 'jsonp'
+                }).done(function(ret) {
+                    callback && callback(ret)
+                    _this.index += 10
+                }).fail(function() {
+                    console.log('error...')
+                }).always(function() {
+                    _this.$element.find('.loading').hide()
+                })
+            },
+            render: function(data) {
+                var _this = this
+                data.subjects.forEach(function(movie) {
+                    movie = movie.subject
+                    var tpl = `<div>
+                                <a href="#">
+                                    <img src="http://img1.doubanio.com/view/photo/s_ratio_poster/public/p480747492.jpg" alt="">
+                                    <div><h2>申肖克的救赎</h2></div>    
+                                    <div><span class="score">9.3</span><span class="collect">分/1000收藏</span></div>
+                                    <div class="average">1994/犯罪 剧情</div>
+                                    <div class="directors">导演：<span>弗兰克</span></div>
+                                    <div class="starring">主演：<span>斯嘉丽</span></div>
+                                </a>
+                            </div>`
+                    var $node = $(tpl);
+                    $node.find('img').attr('src', movie.images.medium)
+                    $node.find('h2').text(movie.title)
+                    $node.find('.score').text(movie.arerage)
+                    $node.find('.collect').text('分/' + movie.collect_count + '收藏')
+                    $node.find('.average').text(movie.year + '/' + movie.genres.join('/'))
+                    $node.find('.directors>span').text(function() {
+                        var directorsArr = []
+                        movie.directors.forEach(function(item) {
+                            directorsArr.push(item.name)
+                        })
+                        return directorsArr.join('、')
+                    })
+                    $node.find('.starring>span').text(function() {
+                        var starringArr = []
+                        movie.casts.forEach(function(item) {
+                            starringArr.push(item.name)
+                        })
+                        return starringArr.join('、')
+                    })
+                    _this.$element.find('#us').append($node)
+                })
+            }
+        }
+        var search = {
+            init: function() {
+                this.$element = $('.search')
+                this.keyword = ''
+                this.bind()
+                this.start()
+            },
+            bind: function() {
+                var _this = this
+                this.$element.find('button').click(function() {
+                    _this.keyword = _this.$element.find('input').val()
+                    _this.$element.find('#search').empty()
+                    _this.start()
+                })
+            },
+            start: function() {
+                var _this = this
+                this.getData(function(data) {
+                    _this.render(data)
+                })
+            },
+            getData: function(callback) {
+                var _this = this
+                _this.$element.find('.loading').show()
+                $.ajax({
+                    url: 'http://api.douban.com/v2/movie/search',
+                    data: {
+                        q: _this.keyword
+                    },
+                    dataType: 'jsonp'
+                }).done(function(ret) {
+                      console.log(ret)
+                    callback && callback(ret)
+                    _this.index += 10
+                }).fail(function() {
+                    console.log('error...')
+                }).always(function() {
+                    _this.$element.find('.loading').hide()
+                })
+            },
+            render: function(data) {
+                var _this = this
+                data.subjects.forEach(function(movie) {
+                    var tpl = `<div>
+                                <a href="#">
+                                    <img src="http://img1.doubanio.com/view/photo/s_ratio_poster/public/p480747492.jpg" alt="">
+                                    <div><h2>申肖克的救赎</h2></div>    
+                                    <div><span class="score">9.3</span><span class="collect">分/1000收藏</span></div>
+                                    <div class="average">1994/犯罪 剧情</div>
+                                    <div class="directors">导演：<span>弗兰克</span></div>
+                                    <div class="starring">主演：<span>斯嘉丽</span></div>
+                                </a>
+                            </div>`
+                    var $node = $(tpl);
+                    $node.find('img').attr('src', movie.images.medium)
+                    $node.find('h2').text(movie.original_title)
+                    $node.find('.score').text(movie.arerage)
+                    $node.find('.collect').text('分/' + movie.collect_count + '收藏')
+                    $node.find('.average').text(movie.year + '/' + movie.genres.join('/'))
+                    $node.find('.directors>span').text(function() {
+                        var directorsArr = []
+                        movie.directors.forEach(function(item) {
+                            directorsArr.push(item.name)
+                        })
+                        return directorsArr.join('、')
+                    })
+                    $node.find('.starring>span').text(function() {
+                        var starringArr = []
+                        movie.casts.forEach(function(item) {
+                            starringArr.push(item.name)
+                        })
+                        return starringArr.join('、')
+                    })
+                    _this.$element.find('#search').append($node)
+                })
+            },
+        }
+        var app = {
+            init: function() {
+                this.$tabs = $('footer>div')
+                this.$panels = $('section')
+                this.bind()
+                this.start
+                top250.init()
+                usBox.init()
+                search.init()
+            },
+            bind: function() {
+                var _this = this
+                this.$tabs.click(function() {
+                    $(this).addClass('active').siblings().removeClass('active')
+                    var index = $(this).index()
+                    _this.$panels.hide().eq(index).fadeIn()
+                })
+            },
+            start: function() {
+
+            }
+        }
+        app.init()*/
+
+        /*代码优化*/
+        var  Helper = {
+            isToEnd:function($viewport,$content){
+                return $viewport.height() + $viewport.scrollTop() + 10 >= $content.height()
+            },
+
+            createNode:function(movie) {
+                    var tpl = `<div>
+                                <a href="#">
+                                    <img src="http://img1.doubanio.com/view/photo/s_ratio_poster/public/p480747492.jpg" alt="">
+                                    <div><h2>申肖克的救赎</h2></div>    
+                                    <div><span class="score">9.3</span><span class="collect">分/1000收藏</span></div>
+                                    <div class="average">1994/犯罪 剧情</div>
+                                    <div class="directors">导演：<span>弗兰克</span></div>
+                                    <div class="starring">主演：<span>斯嘉丽</span></div>
+                                </a>
+                            </div>`
+                    var $node = $(tpl);
+                    $node.find('img').attr('src', movie.images.medium)
+                    $node.find('h2').text(movie.title)
+                    $node.find('.score').text(movie.arerage)
+                    $node.find('.collect').text('分/' + movie.collect_count + '收藏')
+                    $node.find('.average').text(movie.year + '/' + movie.genres.join('/'))
+                    $node.find('.directors>span').text(function() {
+                        var directorsArr = []
+                        movie.directors.forEach(function(item) {
+                            directorsArr.push(item.name)
+                        })
+                        return directorsArr.join('、')
+                    })
+                    $node.find('.starring>span').text(function() {
+                        var starringArr = []
+                        movie.casts.forEach(function(item) {
+                            starringArr.push(item.name)
+                        })
+                        return starringArr.join('、')
+                    })
+                    return $node
+                }
+            }
+        var top250 = {
+            init: function() {
+                this.$element = $('.top250')
+                this.$content = this.$element.find('#top250')
+                this.isLoading = false
+                this.isFinish = false
+                this.index = 0
+                this.bind()
+                this.start()
+            },
+            bind: function() {
+                var _this = this
+                this.$element.scroll(function() {
+                    if (!_this.isFinish && Helper.isToEnd(_this.$element,_this.$content)) {
+                        _this.start()
+                    }
+                })
+            },
+            start: function() {
+                var _this = this
+                this.getData(function(data) {
+                    _this.render(data)
+                })
+            },
+            getData: function(callback) {
+                var _this = this
+                if (_this.isLoading) return;
+                _this.isLoading = true
+                _this.$element.find('.loading').show()
+                $.ajax({
+                    url: '//api.douban.com/v2/movie/top250',
+                    data: {
+                        start: _this.index || 0,
+                        count: 10
+                    },
+                    dataType: 'jsonp'
+                }).done(function(ret) {
+                  console.log(ret)
+                    if (_this.index >= ret.total) {
+                        _this.isFinish = true
+                    }
+                    callback && callback(ret)
+                    _this.index += 10
+                }).fail(function() {
+                    console.log('error...')
+                }).always(function() {
+                    _this.isLoading = false
+                    _this.$element.find('.loading').hide()
+                })
+            },
+            render: function(data) {
+                var _this = this
+                data.subjects.forEach(function(movie){
+                    _this.$content.append(Helper.createNode(movie))
+                })
+            },
+        }
+        var usBox = {
+            init: function() {
+                this.$element = $('.us')
+                this.$content = this.$element.find('#us')
+                this.start()
+            },
+            start: function() {
+                var _this = this
+                this.getData(function(data) {
+                    _this.render(data)
+                })
+            },
+            getData: function(callback) {
+                var _this = this
+                _this.$element.find('.loading').show()
+                $.ajax({
+                    url: 'http://api.douban.com/v2/movie/us_box',
+                    dataType: 'jsonp'
+                }).done(function(ret) {
+                    callback && callback(ret)
+                }).fail(function() {
+                    console.log('error...')
+                }).always(function() {
+                    _this.$element.find('.loading').hide()
+                })
+            },
+            render: function(data) {
+                var _this = this
+                data.subjects.forEach(function(movie) {
+                    _this.$content.append(Helper.createNode(movie.subject))
+                })
+            }
+        }
+        var search = {
+            init: function() {
+                this.$element = $('.search')
+                this.$content = this.$element.find('#search')
+                this.keyword = ''
+                this.bind()
+                this.start()
+            },
+            bind: function() {
+                var _this = this
+                this.$element.find('button').click(function() {
+                    _this.keyword = _this.$element.find('input').val()
+                    _this.$content.empty()
+                    _this.start()
+                })
+            },
+            start: function() {
+                var _this = this
+                this.getData(function(data) {
+                    _this.render(data)
+                })
+            },
+            getData: function(callback) {
+                var _this = this
+                _this.$element.find('.loading').show()
+                $.ajax({
+                    url: 'http://api.douban.com/v2/movie/search',
+                    data: {
+                        q: _this.keyword
+                    },
+                    dataType: 'jsonp'
+                }).done(function(ret) {
+                      console.log(ret)
+                    callback && callback(ret)
+                }).fail(function() {
+                    console.log('error...')
+                }).always(function() {
+                    _this.$element.find('.loading').hide()
+                })
+            },
+            render: function(data) {
+                var _this = this
+                data.subjects.forEach(function(movie) {
+                    _this.$content.append(Helper.createNode(movie))
+                })
+            }
+        }
+        var app = {
+            init: function() {
+                this.$tabs = $('footer>div')
+                this.$panels = $('section')
+                this.bind()
+                top250.init()
+                usBox.init()
+                search.init()
+            },
+            bind: function() {
+                var _this = this
+                this.$tabs.click(function() {
+                    $(this).addClass('active').siblings().removeClass('active')
+                    var index = $(this).index()
+                    _this.$panels.hide().eq(index).fadeIn()
+                })
+            },
+        }
+        app.init()
+    </script>
+</body>
+
+</html>
